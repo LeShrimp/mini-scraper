@@ -43,7 +43,7 @@ var app = express()
 // parse application/json
 app.use(bodyParser.json())
 
-app.use(function (req, res) {
+app.post('/', function (req, res) {
     res.setHeader('Content-Type', 'application/json');
 
     if ("url" in req.body && "selector" in req.body) {
