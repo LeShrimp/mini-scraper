@@ -7,12 +7,13 @@ var cheerio = require('cheerio');
 
 
 // Functionality
-var getMatchingText = function(url, selector, successCallback) {
+var fetchMatchingTexts = function(url, selector, successCallback, errorCallback) {
     request(url, function(error, response, html){
         if(!error){
             var $ = cheerio.load(html);
 
             var texts = [];
+
             var findTextNodes = function findRecursively($object) {
                 $object.contents().each(function() {
                     if (this.nodeType === 3) {
@@ -30,6 +31,8 @@ var getMatchingText = function(url, selector, successCallback) {
             findTextNodes($(selector));
 
             successCallback(texts);
+        } else {
+            errorCallback();
         }
     });
 };
@@ -44,8 +47,10 @@ app.use(function (req, res) {
     res.setHeader('Content-Type', 'application/json');
 
     if ("url" in req.body && "selector" in req.body) {
-        getMatchingText(req.body.url, req.body.selector, function (texts) {
+        fetchMatchingTexts(req.body.url, req.body.selector, function (texts) {
             res.send({"result" : texts});
+        }, function () {
+            res.send({"error" : "Connection failed."});
         });
     } else {
         res.send({"error" : "Invalid body."});
