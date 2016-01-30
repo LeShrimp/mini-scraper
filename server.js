@@ -1,37 +1,52 @@
+// Thanks to Adnan Kukic
+// https://scotch.io/tutorials/scraping-the-web-with-node-js
 var express = require('express');
+var bodyParser = require('body-parser');
 var request = require('request');
 var cheerio = require('cheerio');
-var bodyParser = require('body-parser');
-var app = express();
-
-app.use(bodyParser.json());
 
 
-var smartStringify = function(o) {
-    var cache = [];
-    return JSON.stringify(o, function(key, value) {
-        if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
-                // Circular reference found, discard key
-                return;
-            }
-            // Store value in our collection
-            cache.push(value);
+// Functionality
+var getMatchingText = function(url, selector, successCallback) {
+    request(url, function(error, response, html){
+        if(!error){
+            var $ = cheerio.load(html);
+
+            var texts = [];
+            var findTextNodes = function findRecursively($object) {
+                $object.contents().each(function() {
+                    if (this.nodeType === 3) {
+                        texts.push(this.data);
+                    } else {
+                        findRecursively($(this));
+                    }
+                });
+            };
+
+            findTextNodes($(selector));
+
+            successCallback(texts);
         }
-        return value;
     });
 };
 
-app.post('/scrape', function(req, res){
-    var body = req.body();
+// Server
+var app = express()
 
-    var url = body.url;
-    var selector = body.selector;
+// parse application/json
+app.use(bodyParser.json())
 
+app.use(function (req, res) {
+    res.setHeader('Content-Type', 'application/json');
 
-
-    res.send(smartStringify(req));
-})
+    if ("url" in req.body && "selector" in req.body) {
+        getMatchingText(req.body.url, req.body.selector, function (texts) {
+            res.send({"result" : texts});
+        });
+    } else {
+        res.send({"error" : "Invalid body."});
+    }
+});
 
 app.listen('8081')
 console.log('Magic happens on port 8081');
