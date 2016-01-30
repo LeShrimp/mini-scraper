@@ -16,7 +16,11 @@ var getMatchingText = function(url, selector, successCallback) {
             var findTextNodes = function findRecursively($object) {
                 $object.contents().each(function() {
                     if (this.nodeType === 3) {
-                        texts.push(this.data);
+                        text = $(this).text().trim();
+
+                        if (text !== '') {
+                            texts.push(text);
+                        }
                     } else {
                         findRecursively($(this));
                     }
