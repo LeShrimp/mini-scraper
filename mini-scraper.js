@@ -43,6 +43,13 @@ var app = express()
 // parse application/json
 app.use(bodyParser.json())
 
+app.options('/', function (req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+
+    res.send();
+});
+
 app.post('/', function (req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'application/json');
