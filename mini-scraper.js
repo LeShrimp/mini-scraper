@@ -44,6 +44,7 @@ var app = express()
 app.use(bodyParser.json())
 
 app.post('/', function (req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'application/json');
 
     if ("url" in req.body && "selector" in req.body) {
